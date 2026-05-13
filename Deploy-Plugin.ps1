@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Deploy a Superset chart plugin dynamically into a Dockerized Superset 6.x instance.
+    Deploy one or more Superset chart plugins dynamically into a Dockerized Superset 6.x instance.
     No frontend rebuild required.
 
 .DESCRIPTION
@@ -10,9 +10,11 @@
       1. Patches webpack.config.js for Superset 6.x dynamic loading (ESM + __superset__ externals)
       2. Patches src/index.ts to auto-register via .configure({ key }).register()
       3. Runs npm install + npm run build-dist
-      4. Generates a docker-compose + superset_config.py with the dynamic plugins API blueprint
+      4. Generates a docker-compose + superset_config.py (with all registered plugins)
       5. Starts Superset, registers the plugin in DB
       6. Opens the browser
+
+    Use -AddPlugin to add a plugin to an already running Superset instance without resetting it.
 
 .PARAMETER PluginPath
     Path to the plugin source folder (must contain package.json and src/index.ts).
@@ -30,10 +32,21 @@
     Skip npm install + build (use existing dist/).
 
 .PARAMETER Reset
-    Destroy existing container and volumes before starting.
+    Destroy existing container and volumes before starting fresh.
+
+.PARAMETER AddPlugin
+    Add the plugin to the existing running Superset instance.
+    Rebuilds the plugin, adds it to the docker-compose volumes, and registers it in DB.
+    Does NOT restart Superset from scratch (data preserved).
 
 .EXAMPLE
-    .\Deploy-Plugin.ps1 -PluginPath "C:\my-plugins\my-chart-plugin"
+    # First plugin — fresh start
+    .\Deploy-Plugin.ps1 -PluginPath "C:\plugins\brewery"
+
+    # Add a second plugin to the running instance
+    .\Deploy-Plugin.ps1 -PluginPath "C:\plugins\supplychain" -AddPlugin
+
+    # Start fresh with a specific port
     .\Deploy-Plugin.ps1 -PluginPath ".\plugins\my-plugin" -Port 9090 -Reset
 #>
 
@@ -45,7 +58,8 @@ param(
     [int]$Port = 8088,
     [string]$SupersetImage = "apache/superset:latest",
     [switch]$SkipBuild,
-    [switch]$Reset
+    [switch]$Reset,
+    [switch]$AddPlugin
 )
 
 $ErrorActionPreference = "Stop"
