@@ -1,0 +1,17 @@
+# Generated runtime configs
+.superset-runtime/
+
+# Visual Studio
+.vs/
+
+# Old plugin compiled sources (submodule/clone)
+plugins-compiled/
+
+# Node
+node_modules/
+dist/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
