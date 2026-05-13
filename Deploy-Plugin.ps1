@@ -113,6 +113,7 @@ module.exports = {
     library: { type: 'module' },
     module: true,
     environment: { module: true },
+    asyncChunks: false,
     clean: true,
   },
   experiments: { outputModule: true },
@@ -216,7 +217,7 @@ if ($SkipBuild) {
     }
     if ($needInstall -or -not (Test-Path "node_modules")) {
         Write-Host "  npm install..." -ForegroundColor Cyan
-        npm install 2>&1 | Out-Null
+        npm install --legacy-peer-deps 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: npm install failed" -ForegroundColor Red; Pop-Location; exit 1 }
     }
 
